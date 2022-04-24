@@ -1,3 +1,5 @@
+require 'pry'
+
 class ApplicationController < Sinatra::Base
   set :default_content_type, 'application/json'
 
@@ -15,5 +17,45 @@ class ApplicationController < Sinatra::Base
       } }
     })
   end
+
+  delete '/reviews/:id' do
+    review = Review.find(params[:id])   #find the id for the review we want to delete
+    review.destroy    #use the destroy method on that instance
+    review.to_json    #send the response with the deleted review as JSON
+  end
+
+  get '/reviews' do
+    review = Review.all
+    review.to_json
+  end
+
+  get '/reviews/:id' do
+    review = Review.find(params[:id])
+    review.to_json(only: [:id, :score, :comment], include: {
+      game: { only: [:title], include: {
+        users: { only: [:name] }
+      } }
+    })
+  end
+
+  post '/reviews' do
+    review = Review.create(
+      score: params[:score],
+      comment: params[:comment],
+      game_id: params[:game_id],
+      user_id: params[:user_id]
+    )
+    review.to_json
+  end
+
+  patch '/reviews/:id' do
+    review = Review.find(params[:id])
+    review.update(
+      score: params[:score],
+      comment: params[:comment]
+    )
+    review.to_json
+  end
+
 
 end
